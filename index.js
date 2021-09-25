@@ -1,11 +1,25 @@
-let balance = 500.00;
+// let balance = 500.00;
 
 // Creates a new user account
 class Account {
   constructor(username) {
     this.username = username;
+    this.transactions = [];
     // Initial balance at 0
-    this.balance = 0;
+    // this.balance = 0;
+  }
+
+  get balance() {
+    // Calculate the balance using the transaction objects
+    let balance = 0;
+    for (let t of this.transactions) {
+      balance += t.value;
+    }
+    return balance;
+  }
+
+  addTransaction(transaction) {
+    this.transactions.push(transaction);
   }
 }
 
@@ -17,29 +31,39 @@ class Transaction {
   }
 
   commit() {
-    this.account.balance += this.value;
+    if (!this.isAllowed()) return false;
+    // Keep track of transaction time
+    this.time = new Date();
+    // Keep track of transaction to account
+    this.account.addTransaction(this);
+    return true;
+
+    //this.account.balance += this.value;
   }
 }
 
-class Withdrawal extends Transaction{
+class Withdrawal extends Transaction {
 
   get value() {
     return -this.amount;
   }
-  // commit() {
-  //   this.account.balance -= this.amount;
-  // }
+
+  // Allowed or nah based on account balance
+  isAllowed() {
+    return (this.account.balance - this.amount >= 0);
+  }
 
 }
 
-class Deposit extends Transaction{
+class Deposit extends Transaction {
 
   get value() {
     return this.amount;
   }
-  // commit() {
-  //   this.account.balance += this.amount;
-  // }
+  isAllowed() {
+    // deposits are always allowed
+    return true;
+  }
 }
 
 
@@ -63,3 +87,4 @@ t3.commit();
 console.log('Transaction 3:', t3);
 
 console.log('Ending Balance:', myAccount.balance);
+console.log('Account Transactions History', myAccount.transactions);
